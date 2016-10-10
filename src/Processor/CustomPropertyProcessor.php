@@ -2,8 +2,11 @@
 
 namespace Krlove\EloquentModelGenerator\Processor;
 
+use Krlove\CodeGenerator\Model\ArgumentModel;
 use Krlove\CodeGenerator\Model\DocBlockModel;
 use Krlove\CodeGenerator\Model\PropertyModel;
+use Krlove\CodeGenerator\Model\VirtualMethodModel;
+use Krlove\CodeGenerator\Model\VirtualPropertyModel;
 use Krlove\EloquentModelGenerator\Config;
 use Krlove\EloquentModelGenerator\Model\EloquentModel;
 
@@ -41,6 +44,43 @@ class CustomPropertyProcessor implements ProcessorInterface
             );
             $model->addProperty($pConnection);
         }
+
+        $class = $model->getName()->getName();
+        $virtualMethod = new VirtualMethodModel('all', sprintf('static Collection|%s[]', $class));
+        $virtualMethod->addArgument(new ArgumentModel('columns', null, '[\'*\']'));
+        $model->addMethod($virtualMethod);
+
+        $virtualMethod = new VirtualMethodModel('find', sprintf('static Collection|%s[]|null', $class));
+        $virtualMethod->addArgument(new ArgumentModel('id'));
+        $virtualMethod->addArgument(new ArgumentModel('columns', null, '[\'*\']'));
+        $model->addMethod($virtualMethod);
+
+        $virtualMethod = new VirtualMethodModel('findOrNew', sprintf('static Collection|%s', $class));
+        $virtualMethod->addArgument(new ArgumentModel('id'));
+        $virtualMethod->addArgument(new ArgumentModel('columns', null, '[\'*\']'));
+        $model->addMethod($virtualMethod);
+
+        $virtualMethod = new VirtualMethodModel('findMany', sprintf('static Collection|%s[]', $class));
+        $virtualMethod->addArgument(new ArgumentModel('ids'));
+        $virtualMethod->addArgument(new ArgumentModel('columns', null, '[\'*\']'));
+        $model->addMethod($virtualMethod);
+
+        $virtualMethod = new VirtualMethodModel('findOrFail', sprintf('static Collection|%s', $class));
+        $virtualMethod->addArgument(new ArgumentModel('id'));
+        $virtualMethod->addArgument(new ArgumentModel('columns', null, '[\'*\']'));
+        $model->addMethod($virtualMethod);
+
+        $virtualMethod = new VirtualMethodModel('first', sprintf('static Collection|%s[]|null', $class));
+        $virtualMethod->addArgument(new ArgumentModel('columns', null, '[\'*\']'));
+        $model->addMethod($virtualMethod);
+
+        $virtualMethod = new VirtualMethodModel('firstOrFail', sprintf('static Collection|%s[]', $class));
+        $virtualMethod->addArgument(new ArgumentModel('columns', null, '[\'*\']'));
+        $model->addMethod($virtualMethod);
+
+        $virtualMethod = new VirtualMethodModel('get', sprintf('static Collection|%s[]', $class));
+        $virtualMethod->addArgument(new ArgumentModel('columns', null, '[\'*\']'));
+        $model->addMethod($virtualMethod);
     }
 
     /**

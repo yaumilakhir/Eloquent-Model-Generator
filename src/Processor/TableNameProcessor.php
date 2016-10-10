@@ -41,6 +41,7 @@ class TableNameProcessor implements ProcessorInterface
 
         $model->setName(new ClassNameModel($className, $this->helper->getShortClassName($baseClassName)));
         $model->addUses(new UseClassModel(ltrim($baseClassName, '\\')));
+        $model->addUses(new UseClassModel('Illuminate\Database\Eloquent\Collection'));
         $model->setTableName($tableName ?: $this->helper->getDefaultTableName($className));
 
         if ($model->getTableName() !== $this->helper->getDefaultTableName($className)) {

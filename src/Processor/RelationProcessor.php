@@ -165,7 +165,7 @@ class RelationProcessor implements ProcessorInterface
             $name     = Str::plural(Str::camel($relation->getTableName()));
             $docBlock = sprintf('@return \%s', EloquentHasMany::class);
 
-            $virtualPropertyType = sprintf('%s[]', $relationClass);
+            $virtualPropertyType = sprintf('Collection|%s[]', $relationClass);
         } elseif ($relation instanceof BelongsTo) {
             $name     = Str::singular(Str::camel($relation->getTableName()));
             $docBlock = sprintf('@return \%s', EloquentBelongsTo::class);
@@ -175,7 +175,7 @@ class RelationProcessor implements ProcessorInterface
             $name     = Str::plural(Str::camel($relation->getTableName()));
             $docBlock = sprintf('@return \%s', EloquentBelongsToMany::class);
 
-            $virtualPropertyType = sprintf('%s[]', $relationClass);
+            $virtualPropertyType = sprintf('Collection|%s[]', $relationClass);
         } else {
             throw new GeneratorException('Relation not supported');
         }
@@ -185,7 +185,9 @@ class RelationProcessor implements ProcessorInterface
         $method->setDocBlock(new DocBlockModel($docBlock));
 
         $model->addMethod($method);
-        $model->addProperty(new VirtualPropertyModel($name, $virtualPropertyType));
+        $virtualProperty = new VirtualPropertyModel($name, $virtualPropertyType);
+        $virtualProperty->setWritable(false);
+        $model->addProperty($virtualProperty);
     }
 
     /**
