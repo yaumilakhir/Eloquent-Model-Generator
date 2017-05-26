@@ -7,6 +7,7 @@ use Krlove\CodeGenerator\Model\DocBlockModel;
 use Krlove\CodeGenerator\Model\PropertyModel;
 use Krlove\CodeGenerator\Model\VirtualPropertyModel;
 use Krlove\EloquentModelGenerator\Config;
+use Krlove\EloquentModelGenerator\Helper\EmgHelper;
 use Krlove\EloquentModelGenerator\Model\EloquentModel;
 use Krlove\EloquentModelGenerator\TypeRegistry;
 
@@ -48,6 +49,7 @@ class FieldProcessor implements ProcessorInterface
         $tableDetails       = $schemaManager->listTableDetails($prefix . $model->getTableName());
         $primaryColumnNames = $tableDetails->getPrimaryKey()->getColumns();
 
+        $primaryKey  = null;
         $columnNames = [];
         foreach ($tableDetails->getColumns() as $column) {
             $model->addProperty(new VirtualPropertyModel(
@@ -57,7 +59,28 @@ class FieldProcessor implements ProcessorInterface
 
             if (!in_array($column->getName(), $primaryColumnNames)) {
                 $columnNames[] = $column->getName();
+            } else {
+                if (!$primaryKey) {
+                    $primaryKey = $column;
+                }
             }
+        }
+
+        if ($primaryKey) {
+            if ($primaryKey->getName() != EmgHelper::DEFAULT_PRIMARY_KEY) {
+                $primaryType = $this->typeRegistry->resolveType($column->getType()->getName());
+                $primaryProperty = new PropertyModel('primaryKey');
+                $primaryProperty->setAccess('protected')
+                   ->setValue($primaryKey->getName())
+                   ->setDocBlock(new DocBlockModel('The primary key for the model.', '', '@var ' . $primaryType));
+                $model->addProperty($primaryProperty);
+            }
+
+            $incrementProperty = new PropertyModel('incrementing');
+            $incrementProperty->setAccess('protected')
+               ->setValue($primaryKey->getAutoincrement() ? true : false)
+               ->setDocBlock(new DocBlockModel('Indicates if the IDs are auto-incrementing.', '', '@var bool'));
+            $model->addProperty($incrementProperty);
         }
 
         $fillableProperty = new PropertyModel('fillable');
